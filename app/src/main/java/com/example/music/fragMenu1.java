@@ -1,0 +1,124 @@
+package com.example.music;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.content.ContentResolver;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import android.content.ContentResolver;
+import android.content.ContentResolver;
+import android.content.ContentResolver;
+
+
+public class fragMenu1 extends Fragment {
+
+    private View view;
+    //创建歌曲的String数组和歌手图片的int数组
+    public String[] name={"yihuik苡慧-致你","邓典-星空下的海","宋冬野-安和桥","乔楚熙-彩虹","群星-云在飞","西单女孩-风中奇缘","西单女孩-原点"};
+    public static int[] icons={R.drawable.music1,R.drawable.music2,R.drawable.music3,
+                R.drawable.music4,R.drawable.music5,R.drawable.music6,R.drawable.music7};
+    List<String> musicFilesList = new ArrayList<>();
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        //绑定布局，只不过这里是用inflate()方法
+        view=inflater.inflate(R.layout.music_list,null);
+        //创建listView列表并且绑定控件
+        ListView listView=view.findViewById(R.id.lv);
+
+        //实例化一个适配器
+        MyBaseAdapter adapter=new MyBaseAdapter();
+        //列表设置适配器
+        listView.setAdapter(adapter);
+        //列表元素的点击监听器
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //创建Intent对象，参数就是从frag1跳转到MusicActivity
+                Intent intent=new Intent(fragMenu1.this.getContext(), MusicActivity.class);
+                //将歌曲名和歌曲的下标存入Intent对象
+                intent.putExtra("name",name[position]);
+                intent.putExtra("position",String.valueOf(position));
+                //开始跳转
+                startActivity(intent);
+            }
+        });
+        return view;
+    }
+    private List<String> getMusicFiles() {
+
+        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
+        String[] projection = {
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST
+        };
+        Cursor cursor = Objects.requireNonNull(getActivity()).getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                null,
+                null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String filePath = cursor.getString(0);
+                String title = cursor.getString(1);
+                String artist = cursor.getString(2);
+                musicFilesList.add(filePath);
+            }
+            cursor.close();
+        }
+        return musicFilesList;
+    }
+
+    class MyBaseAdapter extends BaseAdapter{
+
+        @Override
+        public int getCount() {
+            return name.length;
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return name[i];
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        @SuppressLint("ViewHolder")
+        public View getView(int i, View convertView, ViewGroup viewGroup) {
+            //绑定好VIew，然后绑定控件
+            View view=View.inflate(fragMenu1.this.getContext(),R.layout.item_layout,null);
+            TextView tv_name=view.findViewById(R.id.item_name);
+            ImageView iv=view.findViewById(R.id.iv);
+            //设置控件显示的内容，就是获取的歌曲名和歌手图片
+            tv_name.setText(name[i]);
+            iv.setImageResource(icons[i]);
+            return view;
+        }
+    }
+}
